@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="item_song_height_icon">24dp</dimen>
+    <dimen name="item_song_width_icon">24dp</dimen>
+    <dimen name="item_search_margin_top">10dp</dimen>
+    <dimen name="item_song_padding">12dp</dimen>
+
+
+</resources>
