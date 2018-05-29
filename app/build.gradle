@@ -23,6 +23,7 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     testImplementation 'junit:junit:4.12'
@@ -43,4 +44,8 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     // glide
     implementation 'com.github.bumptech.glide:glide:4.7.1'
+
+    implementation 'com.google.android.gms:play-services-auth:11.8.0'
+
+
 }

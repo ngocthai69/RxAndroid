@@ -6,12 +6,23 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import code.android.thaihn.rxandroid.BaseActivity;
 import code.android.thaihn.rxandroid.R;
+import code.android.thaihn.rxandroid.data.interator.GetDataInterator;
 import code.android.thaihn.rxandroid.data.model.Collection;
+import code.android.thaihn.rxandroid.data.model.SongResponse;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity implements MainContract.View,
         MainAdapter.OnClickListenerSong {
@@ -35,73 +46,53 @@ public class MainActivity extends BaseActivity implements MainContract.View,
         configRecycle(this);
         mPresenter = new MainPresenter();
         mPresenter.setView(this);
-        mPresenter.loadData();
+//        mPresenter.loadData();
+        getDataWithRx();
     }
 
-    private void observableDemo() {
-//        Observable<Integer> observable = Observable.create(new ObservableOnSubscribe<Integer>() {
-//            @Override
-//            public void subscribe(ObservableEmitter<Integer> e) throws Exception {
-//                e.onNext(0);
-//                e.on
-//                e.onComplete();
-//            }
-//        });
+    private void getDataWithRx() {
+        Observable<SongResponse> observable = Observable.create(new ObservableOnSubscribe<SongResponse>() {
+            @Override
+            public void subscribe(ObservableEmitter<SongResponse> emitter) throws Exception {
+                try {
+                    GetDataInterator getDataInterator = new GetDataInterator();
+                    String result = getDataInterator.getContentFromUrl("https://api-v2.soundcloud.com/charts?kind=top&genre=soundcloud%3Agenres%3Apop&client_id=a7Ucuq0KY8Ksn8WzBG6wj4x6pcId6BpU&limit=20&offset=20");
+                    SongResponse songResponse = new Gson().fromJson(result, SongResponse.class);
+                    emitter.onNext(songResponse);
+                    emitter.onComplete();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    emitter.onError(e);
+                }
 
-//        Observable<String> observable1 = Observable.create(new ObservableOnSubscribe<String>() {
-//            @Override
-//            public void subscribe(ObservableEmitter<String> e) throws Exception {
-//                e.onNext(getData("https://api-v2.soundcloud.com/charts?kind=top&genre=soundcloud%3Agenres%3Apop&client_id=a7Ucuq0KY8Ksn8WzBG6wj4x6pcId6BpU"));
-//                e.onComplete();
-//            }
-//        });
-//
-//        Observer<String> observer = new Observer<String>() {
-//            @Override
-//            public void onSubscribe(Disposable d) {
-//
-//            }
-//
-//            @Override
-//            public void onNext(String s) {
-//                System.out.println("TTT" + s);
-//            }
-//
-//            @Override
-//            public void onError(Throwable e) {
-//
-//            }
-//
-//            @Override
-//            public void onComplete() {
-//
-//            }
-//        };
+            }
+        });
 
-//        observable1.subscribe(observer);
+        Observer<SongResponse> observer = new Observer<SongResponse>() {
+            @Override
+            public void onSubscribe(Disposable d) {
 
-//        Observer<Integer> observer = new Observer<Integer>() {
-//            @Override
-//            public void onSubscribe(Disposable d) {
-//                System.out.println("TTT" + "onSubscribe");
-//            }
-//
-//            @Override
-//            public void onNext(Integer integer) {
-//                System.out.println("TTT" + "onNext " + integer);
-//            }
-//
-//            @Override
-//            public void onError(Throwable e) {
-//                System.out.println("TTT" + "onError ");
-//            }
-//
-//            @Override
-//            public void onComplete() {
-//                System.out.println("TTT" + "Complete");
-//            }
-//        };
-//        observable.subscribe(observer);
+            }
+
+            @Override
+            public void onNext(SongResponse songResponse) {
+                showList(songResponse.getCollection());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                showError(e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+
+        observable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
     }
 
     @Override
